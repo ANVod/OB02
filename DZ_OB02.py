@@ -1,66 +1,72 @@
-class User:
-    def __init__(self, user_id, name, access_level='user'):
-        self._user_id = user_id
-        self._name = name
-        self._access_level = access_level
+from abc import ABC, abstractmethod
 
-    def __str__(self):
-        return f"ID: {self._user_id}, Name: {self._name}, Access Level: {self._access_level}"
-    @property
-    def user_id(self):
-        return self._user_id
 
-    @property
-    def name(self):
-        return self._name
+class Weapon(ABC):
+    @abstractmethod
+    def attack(self):
+        pass
 
-    @name.setter
-    def name(self, value):
-        self._name = value
+    # Возвращаем урон, который оружие наносит
+    @abstractmethod
+    def damage(self) -> int:
+        pass
 
-    @property
-    def access_level(self):
-        return self._access_level
 
-    @access_level.setter
-    def access_level(self, value):
-        self._access_level = value
+class Sword(Weapon):
+    def attack(self):
+        return "Боец наносит удар мечом."
 
-class Admin(User):
-    def __init__(self, user_id, name):
-        super().__init__(user_id, name, access_level='admin')
-        self._users = []
+    def damage(self) -> int:
+        return 20  # Предположим, урон меча составляет 20 HP
 
-    def add_user(self, user):
-        if not isinstance(user, User):
-            print("Можно добавлять только пользовательские экземпляры")
-            return
-        self._users.append(user)
-        print(f"User {user._name} добавлен.")
 
-    def remove_user(self, user):
-        if user in self._users:
-            self._users.remove(user)
-            print(f"User {user._name} удаленный.")
+class Bow(Weapon):
+    def attack(self):
+        return "Боец наносит удар из лука."
+
+    def damage(self) -> int:
+        return 15  # Урон из лука - 15 HP
+
+
+class Fighter:
+    def __init__(self, weapon: Weapon):
+        self.weapon = weapon
+
+    def attack(self):
+        print(self.weapon.attack())
+
+    def inflict_damage(self, monster):
+        monster.take_damage(self.weapon.damage())
+
+    def changeWeapon(self, weapon: Weapon):
+        self.weapon = weapon
+
+
+class Monster:
+    def __init__(self, health: int):
+        self.health = health
+
+    def take_damage(self, damage: int):
+        self.health -= damage
+        if self.health > 0:
+            print(f"Монстру осталось {self.health} HP.")
         else:
-            print("Пользователь не найден")
-
-    def list_users(self):
-        for user in self._users:
-            print(user)
+            print("Монстр побежден!\n")
 
 
-admin = Admin(1, "Admin User")
-user1 = User(2, "Regular User 1")
-user2 = User(3, "Regular User 2")
+def demonstrate_battle(fighter, monster):
+    fighter.attack()
+    fighter.inflict_damage(monster)
 
-admin.add_user(user1)
-admin.add_user(user2)
+# Создаем монстра с 50 HP
+monster = Monster(50)
 
-print("\nСписок пользователей после добавления:")
-admin.list_users()
+# Создание бойца с мечом
+fighter = Fighter(Sword())
 
-admin.remove_user(user1)
+# Демонстрация боя с мечом
+demonstrate_battle(fighter, monster)
 
-print("\nСписок пользователей после удаления:")
-admin.list_users()
+# Меняем оружие на лук и снова демонстрируем боевые действия
+fighter.changeWeapon(Bow())
+demonstrate_battle(fighter, monster)
